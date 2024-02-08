@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"grpc-story-service/internal/models"
-	"grpc-story-service/proto"
+	"grpc-story-service/protobuffs/story-service"
 	"log"
 	"time"
 
