@@ -37,6 +37,7 @@ func (a *App) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*s
 		Author:    result.Author,
 		AuthorId:  result.AuthorId.Hex(),
 		Comments:  comments,
+		Content:   result.Content,
 		Title:     result.Title,
 		SubTitle:  result.SubTitle,
 		CreatedAt: timestamppb.New(result.CreatedAt),
