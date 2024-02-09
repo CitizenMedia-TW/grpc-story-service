@@ -8,17 +8,18 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // New story
-func (db *Database) NewStory(m model.Story) error {
+func (db *Database) NewStory(m model.Story) (*mongo.InsertOneResult, error) {
 	result, err := db.database.InsertOne(context.Background(), m)
 	if err != nil {
 		log.Println("Error in push")
-		return err
+		return result, err
 	}
-	log.Print(result)
-	return nil
+	log.Print(result.InsertedID)
+	return result, nil
 }
 
 // New Comment

@@ -56,9 +56,9 @@ func (a *App) CreateStory(ctx context.Context, in *story.CreateStoryRequest) (*s
 		Comments:  []model.Comment{}, // Initialize to empty comment list
 	}
 
-	err = a.database.NewStory(newStory)
+	result, err := a.database.NewStory(newStory)
 	if err != nil {
 		return nil, err
 	}
-	return &story.CreateStoryResponse{Message: "Success"}, nil
+	return &story.CreateStoryResponse{Message: "Success", StoryId: result.InsertedID.(primitive.ObjectID).Hex()}, nil
 }
