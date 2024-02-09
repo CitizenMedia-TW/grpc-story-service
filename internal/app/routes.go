@@ -2,7 +2,7 @@ package app
 
 import (
 	"context"
-	"grpc-story-service/proto"
+	"grpc-story-service/protobuffs/story-service"
 	"log"
 )
 

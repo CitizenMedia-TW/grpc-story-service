@@ -3,7 +3,7 @@ package app
 import (
 	"google.golang.org/grpc"
 	"grpc-story-service/internal/database"
-	"grpc-story-service/proto"
+	"grpc-story-service/protobuffs/story-service"
 )
 
 type App struct {
