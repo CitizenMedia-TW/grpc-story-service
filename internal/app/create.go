@@ -2,36 +2,12 @@ package app
 
 import (
 	"context"
-	"grpc-story-service/internal/models"
+	"grpc-story-service/internal/database"
 	"grpc-story-service/protobuffs/story-service"
-	"log"
-	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (a *App) CreateComment(ctx context.Context, in *story.CreateCommentRequest) (*story.CreateCommentResponse, error) {
-	// Convert author id
-	commenterId, err := primitive.ObjectIDFromHex(in.CommenterId)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	commentedStoryId, err := primitive.ObjectIDFromHex(in.CommentedStoryId)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	newComment := model.Comment{
-		Id:          primitive.NewObjectID(),
-		Comment:     in.Comment,
-		Time:        time.Now(),
-		Commenter:   in.Commenter,
-		CommenterId: commenterId,
-	}
-
-	err = a.database.NewComment(newComment, commentedStoryId)
+	err := a.database.NewComment(ctx, in.CommentedStoryId, in.CommenterId, in.Comment)
 	if err != nil {
 		return nil, err
 	}
@@ -39,26 +15,26 @@ func (a *App) CreateComment(ctx context.Context, in *story.CreateCommentRequest)
 }
 
 func (a *App) CreateStory(ctx context.Context, in *story.CreateStoryRequest) (*story.CreateStoryResponse, error) {
-	// Convert author id
-	authorId, err := primitive.ObjectIDFromHex(in.AuthorId)
-	if err != nil {
-		log.Println(err)
-	}
+	err := a.database.NewStory(ctx, database.NewStory{
+		AuthorId: in.AuthorId,
+		Content:  in.Content,
+		Title:    in.Title,
+		SubTitle: in.SubTitle,
+		Tags:     in.Tags,
+	})
 
-	newStory := model.Story{
-		Author:    in.Author,
-		AuthorId:  authorId,
-		Content:   in.Content,
-		Title:     in.Title,
-		SubTitle:  in.SubTitle,
-		CreatedAt: time.Now(),
-		Tags:      in.Tags,
-		Comments:  []model.Comment{}, // Initialize to empty comment list
-	}
-
-	result, err := a.database.NewStory(newStory)
 	if err != nil {
 		return nil, err
 	}
-	return &story.CreateStoryResponse{Message: "Success", StoryId: result.InsertedID.(primitive.ObjectID).Hex()}, nil
+
+	return &story.CreateStoryResponse{Message: "Success"}, nil
+}
+
+func (a *App) CreateCommentReply(ctx context.Context, in *story.CreateSubCommentRequest) (*story.CreateSubCommentResponse, error) {
+	err := a.database.NewSubComment(ctx, in.RepliedCommentId, in.CommenterId, in.Content)
+
+	if err != nil {
+		return nil, err
+	}
+	return &story.CreateSubCommentResponse{Message: "Success"}, nil
 }

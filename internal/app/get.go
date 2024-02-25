@@ -5,39 +5,44 @@ import (
 	"grpc-story-service/protobuffs/story-service"
 	"log"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (a *App) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*story.GetOneStoryResponse, error) {
-	storyId, err := primitive.ObjectIDFromHex(in.StoryId)
+	result, err := a.database.GetStoryById(ctx, in.StoryId)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+	var comments = make([]*story.Comment, len(result.Comments))
 
-	result, err := a.database.GetStoryById(storyId)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	comments := make([]*story.Comment, len(result.Comments))
-	for i, comment := range result.Comments {
+	for i, c := range result.Comments {
+		var subComments = make([]*story.SubComment, len(c.SubComments))
+		for j, sc := range c.SubComments {
+			subComments[j] = &story.SubComment{
+				Id:               sc.Id,
+				Content:          sc.Content,
+				Commenter:        sc.CommenterName,
+				CommenterId:      sc.CommenterId,
+				Time:             timestamppb.New(sc.CreatedAt),
+				RepliedCommentId: c.Id,
+			}
+		}
 		comments[i] = &story.Comment{
-			Id:          comment.Id.Hex(),
-			Comment:     comment.Comment,
-			Time:        timestamppb.New(comment.Time),
-			Commenter:   comment.Commenter,
-			CommenterId: comment.CommenterId.Hex(),
+			Id:          c.Id,
+			Content:     c.Content,
+			Commenter:   c.CommenterName,
+			CommenterId: c.CommenterId,
+			Time:        timestamppb.New(c.CreatedAt),
+			SubComments: subComments,
 		}
 	}
 
 	res := &story.GetOneStoryResponse{
-		Author:    result.Author,
-		AuthorId:  result.AuthorId.Hex(),
-		Comments:  comments,
+		Author:    result.AuthorName,
+		AuthorId:  result.AuthorId,
 		Content:   result.Content,
+		Comments:  comments,
 		Title:     result.Title,
 		SubTitle:  result.SubTitle,
 		CreatedAt: timestamppb.New(result.CreatedAt),

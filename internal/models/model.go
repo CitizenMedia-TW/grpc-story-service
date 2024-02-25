@@ -1,24 +1,34 @@
 package model
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-import "time"
+import (
+	"time"
+)
 
 type Story struct {
-	Id        primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Author    string             `bson:"author" json:"author"`
-	AuthorId  primitive.ObjectID `bson:"authorId,omitempty" json:"authorId,omitempty"`
-	Content   string             `bson:"content" json:"content"`
-	Title     string             `bson:"title" json:"title"`
-	SubTitle  string             `bson:"subTitle" json:"subTitle"`
-	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
-	Comments  []Comment          `bson:"comments,omitempty" json:"comments,omitempty"`
-	Tags      []string           `bson:"tags" json:"tags"`
+	Id         string    `json:"id,omitempty"`
+	AuthorName string    `json:"authorName"`
+	AuthorId   string    `json:"authorId,omitempty"`
+	Content    string    `json:"content"`
+	Title      string    `json:"title"`
+	SubTitle   string    `json:"subTitle"`
+	CreatedAt  time.Time `json:"createdAt"`
+	Tags       []string  `json:"tags"`
+	Comments   []Comment `json:"comments"`
 }
 
 type Comment struct {
-	Id          primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
-	Comment     string             `bson:"comment" json:"comment"`
-	Time        time.Time          `bson:"date" json:"date"`
-	Commenter   string             `bson:"commenter" json:"commenter"`
-	CommenterId primitive.ObjectID `bson:"commenterId" json:"commenterId"`
+	Id            string       `json:"_id,omitempty"`
+	Content       string       `json:"comment"`
+	CreatedAt     time.Time    `json:"createdAt"`
+	CommenterId   string       `json:"commenterId"`
+	CommenterName string       `json:"commenterName"`
+	SubComments   []SubComment `json:"replies"`
+}
+
+type SubComment struct {
+	Id            string    `json:"_id,omitempty"`
+	Content       string    `json:"comment"`
+	CreatedAt     time.Time `json:"createdAt"`
+	CommenterId   string    `json:"commenterId"`
+	CommenterName string    `json:"commenterName"`
 }

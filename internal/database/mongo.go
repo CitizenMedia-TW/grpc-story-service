@@ -10,7 +10,7 @@ import (
 )
 
 type Database struct {
-	database *mongo.Collection
+	database *mongo.Database
 }
 
 func New() *Database {
@@ -20,7 +20,7 @@ func New() *Database {
 	}
 }
 
-func connect() *mongo.Collection {
+func connect() *mongo.Database {
 	log.Println("Connecting to MongoDB...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -44,7 +44,5 @@ func connect() *mongo.Collection {
 	}
 	log.Println("Connected to MongoDB!")
 
-	collection := client.Database("GolangStoryTest").Collection("grpctest")
-
-	return collection
+	return client.Database("GolangStoryTest")
 }

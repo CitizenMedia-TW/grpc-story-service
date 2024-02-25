@@ -3,43 +3,99 @@ package database
 import (
 	"context"
 	"errors"
-	"grpc-story-service/internal/models"
 	"log"
+	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// New story
-func (db *Database) NewStory(m model.Story) (*mongo.InsertOneResult, error) {
-	result, err := db.database.InsertOne(context.Background(), m)
-	if err != nil {
-		log.Println("Error in push")
-		return result, err
-	}
-	log.Print(result.InsertedID)
-	return result, nil
+type NewStory struct {
+	AuthorId string
+	Content  string
+	Title    string
+	SubTitle string
+	Tags     []string
 }
 
-// New Comment
-func (db *Database) NewComment(m model.Comment, commentedStoryId primitive.ObjectID) error {
-	filter := bson.M{"_id": commentedStoryId}
-	update := bson.D{
-		primitive.E{
-			Key: "$push", Value: bson.D{primitive.E{Key: "comments", Value: m}},
-		},
+func (db *Database) NewStory(ctx context.Context, story NewStory) error {
+	authorId, err := primitive.ObjectIDFromHex(story.AuthorId)
+	if err != nil {
+		return errors.Join(err, errors.New("invalid author id"+story.AuthorId))
 	}
 
-	result, err := db.database.UpdateOne(context.Background(), filter, update)
-	log.Println(result)
-	if result.MatchedCount == 0 {
-		log.Println("Commented story id not found")
-		return errors.New("Commented story id not found")
+	//probably should check if author exist, but since it's nosql database, and it does not affect the query outcome, we'll skip it for now.
+	storyEntity := StoryEntity{
+		Id:        primitive.NewObjectID(),
+		AuthorId:  authorId,
+		Content:   story.Content,
+		Title:     story.Title,
+		SubTitle:  story.SubTitle,
+		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
+		Tags:      story.Tags,
 	}
+
+	result, err := db.database.Collection(StoryCollection).InsertOne(ctx, storyEntity)
+
 	if err != nil {
-		log.Println("Error in CreateComment")
+		log.Println("Error in push")
 		return err
 	}
+	//todo: use a better logging/tracing system
+	log.Print(result)
+	return nil
+}
+
+func (db *Database) NewComment(ctx context.Context, commentedStoryId string, commenterId string, content string) error {
+	storyOid, err := primitive.ObjectIDFromHex(commentedStoryId)
+	if err != nil {
+		return errors.Join(err, errors.New("invalid story id"+commentedStoryId))
+	}
+	commenterOid, err := primitive.ObjectIDFromHex(commenterId)
+	if err != nil {
+		return errors.Join(err, errors.New("invalid commenter id"+commenterId))
+	}
+
+	//probably should check if story and commenter exist, but since it's nosql database, and it does not affect the query outcome, we'll skip it for now.
+	commentEntity := CommentEntity{
+		Id:          primitive.NewObjectID(),
+		StoryId:     storyOid,
+		Content:     content,
+		CreatedAt:   primitive.NewDateTimeFromTime(time.Now()),
+		CommenterId: commenterOid,
+	}
+
+	_, err = db.database.Collection(CommentCollection).InsertOne(ctx, commentEntity)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *Database) NewSubComment(ctx context.Context, repliedCommentId string, replierId string, content string) error {
+	repliedCommentOid, err := primitive.ObjectIDFromHex(repliedCommentId)
+	if err != nil {
+		return errors.Join(err, errors.New("invalid story id"+repliedCommentId))
+	}
+	replierOid, err := primitive.ObjectIDFromHex(replierId)
+	if err != nil {
+		return errors.Join(err, errors.New("invalid commenter id"+repliedCommentId))
+	}
+
+	reply := SubCommentEntity{
+		Id:        primitive.NewObjectID(),
+		ParentId:  repliedCommentOid,
+		Content:   content,
+		CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
+		ReplierId: replierOid,
+	}
+
+	_, err = db.database.Collection(SubCommentCollection).InsertOne(ctx, reply)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

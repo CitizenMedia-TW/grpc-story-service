@@ -39,7 +39,7 @@ func (a *App) DropCollection(ctx context.Context, in *story.Empty) (*story.Empty
 
 // Temperarily function
 func (a *App) GetRecommended(ctx context.Context, in *story.GetRecommendedRequest) (*story.GetRecommendedResponse, error) {
-	stories, err := a.database.GetTen()
+	stories, err := a.database.GetStories(ctx, in.Skip, in.Count)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -47,7 +47,7 @@ func (a *App) GetRecommended(ctx context.Context, in *story.GetRecommendedReques
 
 	resList := make([]string, len(stories))
 	for i, v := range stories {
-		resList[i] = v.Id.Hex()
+		resList[i] = v.Id
 	}
 
 	return &story.GetRecommendedResponse{
