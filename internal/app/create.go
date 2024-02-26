@@ -30,9 +30,8 @@ func (a *App) CreateStory(ctx context.Context, in *story.CreateStoryRequest) (*s
 	return &story.CreateStoryResponse{Message: "Success"}, nil
 }
 
-func (a *App) CreateCommentReply(ctx context.Context, in *story.CreateSubCommentRequest) (*story.CreateSubCommentResponse, error) {
+func (a *App) CreateSubComment(ctx context.Context, in *story.CreateSubCommentRequest) (*story.CreateSubCommentResponse, error) {
 	err := a.database.NewSubComment(ctx, in.RepliedCommentId, in.CommenterId, in.Content)
-
 	if err != nil {
 		return nil, err
 	}

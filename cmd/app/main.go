@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/joho/godotenv"
+	"grpc-story-service/internal/app/controllers"
 	"log"
 	"net"
+	"net/http"
 
 	"grpc-story-service/internal/app"
 	// "google.golang.org/grpc"
@@ -16,11 +19,20 @@ var (
 
 func main() {
 
+	err := godotenv.Load()
+
 	// Declare an instance of the application
 	a := app.New()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
-	if err = a.Server.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
 	}
+
+	routes := controllers.NewHttpRoutes(a)
+	err = http.Serve(lis, routes.Routes())
+	if err != nil {
+		return
+	}
+
 }

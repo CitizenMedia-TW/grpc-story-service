@@ -51,3 +51,17 @@ func (a *App) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*s
 
 	return res, nil
 }
+
+func (a *App) GetRecommended(ctx context.Context, in *story.GetRecommendedRequest) (*story.GetRecommendedResponse, error) {
+	result, err := a.database.GetStories(ctx, in.Skip, in.Count)
+	if err != nil {
+		return nil, err
+	}
+	var ids []string = make([]string, len(result))
+
+	for i, r := range result {
+		ids[i] = r.Id
+	}
+
+	return &story.GetRecommendedResponse{StoryIdList: ids}, nil
+}

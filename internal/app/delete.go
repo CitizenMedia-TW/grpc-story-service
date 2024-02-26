@@ -4,23 +4,11 @@ import (
 	"context"
 	"grpc-story-service/protobuffs/story-service"
 	"log"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (a *App) DeleteComment(ctx context.Context, in *story.DeleteCommentRequest) (*story.DeleteCommentResponse, error) {
-	deleteFrom, err := primitive.ObjectIDFromHex(in.StoryId)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	deleteComment, err := primitive.ObjectIDFromHex(in.CommentId)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
 
-	err = a.database.DeleteComment(deleteFrom, deleteComment)
+	err := a.database.DeleteComment(ctx, in.CommentId)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -30,17 +18,23 @@ func (a *App) DeleteComment(ctx context.Context, in *story.DeleteCommentRequest)
 }
 
 func (a *App) DeleteStory(ctx context.Context, in *story.DeleteStoryRequest) (*story.DeleteStoryResponse, error) {
-	deleteStory, err := primitive.ObjectIDFromHex(in.StoryId)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
 
-	err = a.database.DeleteStory(deleteStory)
+	err := a.database.DeleteStory(ctx, in.StoryId)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
 	return &story.DeleteStoryResponse{Message: "success"}, nil
+}
+
+func (a *App) DeleteSubComment(ctx context.Context, in *story.DeleteSubCommentRequest) (*story.DeleteSubCommentResponse, error) {
+
+	err := a.database.DeleteSubComment(ctx, in.SubCommentId)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &story.DeleteSubCommentResponse{Message: "success"}, nil
 }
