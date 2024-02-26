@@ -14,7 +14,7 @@ import (
 )
 
 func GetAuthToken(t *testing.T) string {
-	grpcClient, err := grpc.Dial("http://157.230.46.45/auth-service", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	grpcClient, err := grpc.Dial("157.230.46.45:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	assert.NoError(t, err)
 	token, err := auth.NewAuthServiceClient(grpcClient).GenerateToken(context.TODO(), &auth.GenerateTokenRequest{
 		Mail: "110703065@nccu.edu.tw",

@@ -16,7 +16,7 @@ type HttpRoutes struct {
 }
 
 func NewHttpRoutes(a app.App) HttpRoutes {
-	grpcClient, err := grpc.Dial("http://157.230.46.45/auth-service", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	grpcClient, err := grpc.Dial("157.230.46.45:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		panic(err)
@@ -34,6 +34,7 @@ func (routes HttpRoutes) middlewares(next http.Handler) http.Handler {
 		res, err := routes.authClient.VerifyToken(context.Background(), &auth.VerifyTokenRequest{Token: r.Header.Get("Authorization")})
 
 		if err == nil {
+			println(res.Message)
 			r = r.WithContext(context.WithValue(r.Context(), "userId", res.JwtContent.Id))
 			r = r.WithContext(context.WithValue(r.Context(), "mail", res.JwtContent.Mail))
 		}
