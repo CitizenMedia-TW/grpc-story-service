@@ -47,6 +47,7 @@ func TestCreateAndGetStory(t *testing.T) {
 	println(response.Status + " wwwww")
 	err = json.NewDecoder(response.Body).Decode(&resBody)
 	assert.NoError(t, err)
-	println(resBody.Message)
+	storyId := resBody.StoryId
+	assert.NotEmpty(t, storyId)
 
 }

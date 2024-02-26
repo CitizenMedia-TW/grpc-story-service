@@ -25,6 +25,7 @@ func (routes HttpRoutes) StoryRoute(writer http.ResponseWriter, request *http.Re
 
 func (routes HttpRoutes) CreateStory(writer http.ResponseWriter, request *http.Request) {
 	userId := request.Context().Value("userId")
+
 	if userId == nil {
 		http.Error(writer, "UnAuthorized", http.StatusUnauthorized)
 		return

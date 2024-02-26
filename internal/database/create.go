@@ -17,10 +17,10 @@ type NewStory struct {
 	Tags     []string
 }
 
-func (db *Database) NewStory(ctx context.Context, story NewStory) error {
+func (db *Database) NewStory(ctx context.Context, story NewStory) (string, error) {
 	authorId, err := primitive.ObjectIDFromHex(story.AuthorId)
 	if err != nil {
-		return errors.Join(err, errors.New("invalid author id"+story.AuthorId))
+		return "", errors.Join(err, errors.New("invalid author id"+story.AuthorId))
 	}
 
 	//probably should check if author exist, but since it's nosql database, and it does not affect the query outcome, we'll skip it for now.
@@ -38,21 +38,21 @@ func (db *Database) NewStory(ctx context.Context, story NewStory) error {
 
 	if err != nil {
 		log.Println("Error in push")
-		return err
+		return "", err
 	}
 	//todo: use a better logging/tracing system
 	log.Print(result)
-	return nil
+	return storyEntity.Id.Hex(), nil
 }
 
-func (db *Database) NewComment(ctx context.Context, commentedStoryId string, commenterId string, content string) error {
+func (db *Database) NewComment(ctx context.Context, commentedStoryId string, commenterId string, content string) (string, error) {
 	storyOid, err := primitive.ObjectIDFromHex(commentedStoryId)
 	if err != nil {
-		return errors.Join(err, errors.New("invalid story id"+commentedStoryId))
+		return "", errors.Join(err, errors.New("invalid story id"+commentedStoryId))
 	}
 	commenterOid, err := primitive.ObjectIDFromHex(commenterId)
 	if err != nil {
-		return errors.Join(err, errors.New("invalid commenter id"+commenterId))
+		return "", errors.Join(err, errors.New("invalid commenter id"+commenterId))
 	}
 
 	//probably should check if story and commenter exist, but since it's nosql database, and it does not affect the query outcome, we'll skip it for now.
@@ -67,20 +67,20 @@ func (db *Database) NewComment(ctx context.Context, commentedStoryId string, com
 	_, err = db.database.Collection(CommentCollection).InsertOne(ctx, commentEntity)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return commentEntity.Id.Hex(), nil
 }
 
-func (db *Database) NewSubComment(ctx context.Context, repliedCommentId string, replierId string, content string) error {
+func (db *Database) NewSubComment(ctx context.Context, repliedCommentId string, replierId string, content string) (string, error) {
 	repliedCommentOid, err := primitive.ObjectIDFromHex(repliedCommentId)
 	if err != nil {
-		return errors.Join(err, errors.New("invalid story id"+repliedCommentId))
+		return "", errors.Join(err, errors.New("invalid story id"+repliedCommentId))
 	}
 	replierOid, err := primitive.ObjectIDFromHex(replierId)
 	if err != nil {
-		return errors.Join(err, errors.New("invalid commenter id"+repliedCommentId))
+		return "", errors.Join(err, errors.New("invalid commenter id"+repliedCommentId))
 	}
 
 	reply := SubCommentEntity{
@@ -94,8 +94,8 @@ func (db *Database) NewSubComment(ctx context.Context, repliedCommentId string, 
 	_, err = db.database.Collection(SubCommentCollection).InsertOne(ctx, reply)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return reply.Id.Hex(), nil
 }
