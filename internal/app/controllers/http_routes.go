@@ -33,8 +33,7 @@ func (routes HttpRoutes) middlewares(next http.Handler) http.Handler {
 
 		res, err := routes.authClient.VerifyToken(context.Background(), &auth.VerifyTokenRequest{Token: r.Header.Get("Authorization")})
 
-		if err == nil {
-			println(res.Message)
+		if err == nil && res.Message != "Fail" {
 			r = r.WithContext(context.WithValue(r.Context(), "userId", res.JwtContent.Id))
 			r = r.WithContext(context.WithValue(r.Context(), "mail", res.JwtContent.Mail))
 		}

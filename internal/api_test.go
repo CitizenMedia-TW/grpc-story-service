@@ -37,7 +37,7 @@ func TestCreateAndGetStory(t *testing.T) {
 	assert.NoError(t, err)
 
 	request, err := http.NewRequest("POST", "http://localhost:50051/story", b)
-	request.Header.Set("Authorization", "Bearer"+token)
+	request.Header.Set("Authorization", "Bearer "+token)
 	assert.NoError(t, err)
 
 	response, err := http.DefaultClient.Do(request)
