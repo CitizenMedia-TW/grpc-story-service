@@ -34,14 +34,13 @@ func (db *Database) NewStory(ctx context.Context, story NewStory) (string, error
 		Tags:      story.Tags,
 	}
 
-	result, err := db.database.Collection(StoryCollection).InsertOne(ctx, storyEntity)
+	_, err = db.database.Collection(StoryCollection).InsertOne(ctx, storyEntity)
 
 	if err != nil {
 		log.Println("Error in push")
 		return "", err
 	}
 	//todo: use a better logging/tracing system
-	log.Print(result)
 	return storyEntity.Id.Hex(), nil
 }
 

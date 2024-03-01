@@ -31,14 +31,12 @@ func (routes HttpRoutes) middlewares(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Print("Executing middleware")
 
-		println(r.Header.Get("Authorization"))
 		res, err := routes.authClient.VerifyToken(context.Background(), &auth.VerifyTokenRequest{Token: r.Header.Get("Authorization")})
 
-		if err == nil && res.Message != "Fail" {
-			println(res.JwtContent.Id)
+		if err == nil && res.Message != "Failed" {
+			println(res.Message)
 			r = r.WithContext(context.WithValue(r.Context(), "userId", res.JwtContent.Id))
 			r = r.WithContext(context.WithValue(r.Context(), "mail", res.JwtContent.Mail))
-			println(r.Context().Value("userId"))
 		}
 
 		//Allow CORS here By * or specific origin

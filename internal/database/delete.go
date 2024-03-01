@@ -3,18 +3,23 @@ package database
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 )
 
-func (db *Database) DeleteComment(ctx context.Context, storyId string) error {
-	result := db.database.Collection(CommentCollection).FindOneAndDelete(ctx, bson.M{"_id": storyId})
+func (db *Database) DeleteComment(ctx context.Context, commentId string) error {
+	oid, err := primitive.ObjectIDFromHex(commentId)
+	if err != nil {
+		return err
+	}
+	result := db.database.Collection(CommentCollection).FindOneAndDelete(ctx, bson.M{"_id": oid})
 	if result.Err() != nil {
 		log.Println("Error in DeleteComment")
 		return result.Err()
 	}
 	comment := CommentEntity{}
-	err := result.Decode(&comment)
+	err = result.Decode(&comment)
 	if err != nil {
 		log.Println("Error in DeleteComment")
 		return err
@@ -28,7 +33,11 @@ func (db *Database) DeleteComment(ctx context.Context, storyId string) error {
 }
 
 func (db *Database) DeleteSubComment(ctx context.Context, subCommentId string) error {
-	_, err := db.database.Collection(SubCommentCollection).DeleteOne(ctx, bson.M{"_id": subCommentId})
+	oid, err := primitive.ObjectIDFromHex(subCommentId)
+	if err != nil {
+		return err
+	}
+	_, err = db.database.Collection(SubCommentCollection).DeleteOne(ctx, bson.M{"_id": oid})
 	if err != nil {
 		log.Println("Error in DeleteSubComment")
 		return err
@@ -37,12 +46,19 @@ func (db *Database) DeleteSubComment(ctx context.Context, subCommentId string) e
 }
 
 func (db *Database) DeleteStory(ctx context.Context, storyId string) error {
-	_, err := db.database.Collection(StoryCollection).DeleteOne(ctx, bson.M{"_id": storyId})
+	oid, err := primitive.ObjectIDFromHex(storyId)
+	if err != nil {
+		return err
+	}
+	result, err := db.database.Collection(StoryCollection).DeleteOne(ctx, bson.M{"_id": oid})
 	if err != nil {
 		log.Println("Error in DeleteStory")
 		return err
 	}
-	cursor, err := db.database.Collection(CommentCollection).Find(ctx, bson.M{"storyId": storyId}, options.Find())
+	if result.DeletedCount == 0 {
+		return ErrNotFound
+	}
+	cursor, err := db.database.Collection(CommentCollection).Find(ctx, bson.M{"storyId": oid}, options.Find())
 	if err != nil {
 		log.Println("Error in DeleteStory")
 		return err
@@ -61,7 +77,7 @@ func (db *Database) DeleteStory(ctx context.Context, storyId string) error {
 			return err
 		}
 	}
-	_, err = db.database.Collection(CommentCollection).DeleteMany(ctx, bson.M{"storyId": storyId})
+	_, err = db.database.Collection(CommentCollection).DeleteMany(ctx, bson.M{"storyId": oid})
 	if err != nil {
 		log.Println("Error in DeleteStory")
 		return err

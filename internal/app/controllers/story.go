@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"grpc-story-service/internal/database"
 	"grpc-story-service/protobuffs/story-service"
 	"net/http"
 )
@@ -63,6 +64,10 @@ func (routes HttpRoutes) GetOneStory(writer http.ResponseWriter, request *http.R
 	}
 	res, err := routes.app.GetOneStory(request.Context(), in)
 	if err != nil {
+		if err == database.ErrNotFound {
+			http.Error(writer, "Story not found", http.StatusNotFound)
+			return
+		}
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}

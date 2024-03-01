@@ -11,6 +11,9 @@ func (routes HttpRoutes) SubCommentRoute(writer http.ResponseWriter, request *ht
 	case "POST":
 		routes.CreateSubComment(writer, request)
 		return
+	case "DELETE":
+		routes.DeleteSubComment(writer, request)
+		return
 	default:
 		http.Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
 		return

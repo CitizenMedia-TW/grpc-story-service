@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"grpc-story-service/protobuffs/story-service"
+	"log"
 	"net/http"
 )
 
@@ -11,6 +12,9 @@ func (routes HttpRoutes) CommentRoute(writer http.ResponseWriter, request *http.
 	case "POST":
 		routes.CreateComment(writer, request)
 		return
+	case "DELETE":
+		routes.DeleteComment(writer, request)
+		return
 	default:
 		http.Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -18,6 +22,7 @@ func (routes HttpRoutes) CommentRoute(writer http.ResponseWriter, request *http.
 }
 
 func (routes HttpRoutes) DeleteComment(writer http.ResponseWriter, request *http.Request) {
+
 	userId := request.Context().Value("userId")
 	if userId == nil {
 		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
@@ -36,11 +41,13 @@ func (routes HttpRoutes) DeleteComment(writer http.ResponseWriter, request *http
 	res, err := routes.app.DeleteComment(request.Context(), in)
 
 	if err != nil {
+		log.Println("Error deleting comment", err.Error())
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	err = json.NewEncoder(writer).Encode(res)
 	if err != nil {
+		log.Println("Error encoding response")
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -57,7 +64,7 @@ func (routes HttpRoutes) CreateComment(w http.ResponseWriter, r *http.Request) {
 	in := &story.CreateCommentRequest{}
 	err := json.NewDecoder(r.Body).Decode(in)
 	if err != nil {
-		http.Error(w, "Error decoding request", http.StatusUnauthorized)
+		http.Error(w, "Error decoding request", http.StatusBadRequest)
 		return
 	}
 	in.CommenterId = userId.(string)

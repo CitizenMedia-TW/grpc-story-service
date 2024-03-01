@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"time"
@@ -20,6 +21,8 @@ func New() Database {
 		database: db,
 	}
 }
+
+var ErrNotFound = errors.New("not found in db")
 
 func connect() *mongo.Database {
 	mongoUri, found := os.LookupEnv("MONGO_URI")
@@ -51,5 +54,5 @@ func connect() *mongo.Database {
 	}
 	log.Println("Connected to MongoDB!")
 
-	return client.Database("GolangStoryTest")
+	return client.Database("citizen")
 }

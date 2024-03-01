@@ -10,6 +10,7 @@ import (
 
 func (a *App) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*story.GetOneStoryResponse, error) {
 	result, err := a.database.GetStoryById(ctx, in.StoryId)
+
 	if err != nil {
 		log.Println(err)
 		return nil, err
