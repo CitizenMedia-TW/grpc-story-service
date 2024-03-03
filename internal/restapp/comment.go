@@ -1,4 +1,4 @@
-package controllers
+package restapp
 
 import (
 	"encoding/json"
@@ -7,13 +7,13 @@ import (
 	"net/http"
 )
 
-func (routes HttpRoutes) CommentRoute(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) CommentRoute(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case "POST":
-		routes.CreateComment(writer, request)
+		s.CreateComment(writer, request)
 		return
 	case "DELETE":
-		routes.DeleteComment(writer, request)
+		s.DeleteComment(writer, request)
 		return
 	default:
 		http.Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
@@ -21,7 +21,7 @@ func (routes HttpRoutes) CommentRoute(writer http.ResponseWriter, request *http.
 	}
 }
 
-func (routes HttpRoutes) DeleteComment(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) DeleteComment(writer http.ResponseWriter, request *http.Request) {
 
 	userId := request.Context().Value("userId")
 	if userId == nil {
@@ -38,7 +38,7 @@ func (routes HttpRoutes) DeleteComment(writer http.ResponseWriter, request *http
 
 	in.DeleterId = userId.(string)
 
-	res, err := routes.app.DeleteComment(request.Context(), in)
+	res, err := s.helper.DeleteComment(request.Context(), in)
 
 	if err != nil {
 		log.Println("Error deleting comment", err.Error())
@@ -54,7 +54,7 @@ func (routes HttpRoutes) DeleteComment(writer http.ResponseWriter, request *http
 	return
 }
 
-func (routes HttpRoutes) CreateComment(w http.ResponseWriter, r *http.Request) {
+func (s RestApp) CreateComment(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId")
 	if userId == nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -68,7 +68,7 @@ func (routes HttpRoutes) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	in.CommenterId = userId.(string)
-	res, err := routes.app.CreateComment(r.Context(), in)
+	res, err := s.helper.CreateComment(r.Context(), in)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

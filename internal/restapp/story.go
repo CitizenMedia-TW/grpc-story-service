@@ -1,4 +1,4 @@
-package controllers
+package restapp
 
 import (
 	"encoding/json"
@@ -7,16 +7,16 @@ import (
 	"net/http"
 )
 
-func (routes HttpRoutes) StoryRoute(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) StoryRoute(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case "POST":
-		routes.CreateStory(writer, request)
+		s.CreateStory(writer, request)
 		return
 	case "GET":
-		routes.GetOneStory(writer, request)
+		s.GetOneStory(writer, request)
 		return
 	case "DELETE":
-		routes.DeleteStory(writer, request)
+		s.DeleteStory(writer, request)
 		return
 	default:
 		http.Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
@@ -24,7 +24,7 @@ func (routes HttpRoutes) StoryRoute(writer http.ResponseWriter, request *http.Re
 	}
 }
 
-func (routes HttpRoutes) CreateStory(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) CreateStory(writer http.ResponseWriter, request *http.Request) {
 	userId := request.Context().Value("userId")
 
 	if userId == nil {
@@ -41,7 +41,7 @@ func (routes HttpRoutes) CreateStory(writer http.ResponseWriter, request *http.R
 
 	in.AuthorId = userId.(string)
 
-	res, err := routes.app.CreateStory(request.Context(), in)
+	res, err := s.helper.CreateStory(request.Context(), in)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -55,14 +55,14 @@ func (routes HttpRoutes) CreateStory(writer http.ResponseWriter, request *http.R
 	return
 }
 
-func (routes HttpRoutes) GetOneStory(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) GetOneStory(writer http.ResponseWriter, request *http.Request) {
 	in := &story.GetOneStoryRequest{}
 	err := json.NewDecoder(request.Body).Decode(in)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
-	res, err := routes.app.GetOneStory(request.Context(), in)
+	res, err := s.helper.GetOneStory(request.Context(), in)
 	if err != nil {
 		if err == database.ErrNotFound {
 			http.Error(writer, "Story not found", http.StatusNotFound)
@@ -79,7 +79,7 @@ func (routes HttpRoutes) GetOneStory(writer http.ResponseWriter, request *http.R
 	return
 }
 
-func (routes HttpRoutes) DeleteStory(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) DeleteStory(writer http.ResponseWriter, request *http.Request) {
 	userId := request.Context().Value("userId")
 	if userId == nil {
 		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
@@ -94,7 +94,7 @@ func (routes HttpRoutes) DeleteStory(writer http.ResponseWriter, request *http.R
 	}
 	in.DeleterId = userId.(string)
 
-	res, err := routes.app.DeleteStory(request.Context(), in)
+	res, err := s.helper.DeleteStory(request.Context(), in)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)

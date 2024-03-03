@@ -1,4 +1,4 @@
-package controllers
+package restapp
 
 import (
 	"encoding/json"
@@ -6,13 +6,13 @@ import (
 	"net/http"
 )
 
-func (routes HttpRoutes) SubCommentRoute(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) SubCommentRoute(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case "POST":
-		routes.CreateSubComment(writer, request)
+		s.CreateSubComment(writer, request)
 		return
 	case "DELETE":
-		routes.DeleteSubComment(writer, request)
+		s.DeleteSubComment(writer, request)
 		return
 	default:
 		http.Error(writer, "Method not allowed", http.StatusMethodNotAllowed)
@@ -20,7 +20,7 @@ func (routes HttpRoutes) SubCommentRoute(writer http.ResponseWriter, request *ht
 	}
 }
 
-func (routes HttpRoutes) CreateSubComment(w http.ResponseWriter, r *http.Request) {
+func (s RestApp) CreateSubComment(w http.ResponseWriter, r *http.Request) {
 	userId := r.Context().Value("userId")
 	if userId == nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -34,7 +34,7 @@ func (routes HttpRoutes) CreateSubComment(w http.ResponseWriter, r *http.Request
 		return
 	}
 	in.CommenterId = userId.(string)
-	res, err := routes.app.CreateSubComment(r.Context(), in)
+	res, err := s.helper.CreateSubComment(r.Context(), in)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -47,7 +47,7 @@ func (routes HttpRoutes) CreateSubComment(w http.ResponseWriter, r *http.Request
 	return
 }
 
-func (routes HttpRoutes) DeleteSubComment(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) DeleteSubComment(writer http.ResponseWriter, request *http.Request) {
 	userId := request.Context().Value("userId")
 	if userId == nil {
 		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
@@ -62,7 +62,7 @@ func (routes HttpRoutes) DeleteSubComment(writer http.ResponseWriter, request *h
 	}
 	in.DeleterId = userId.(string)
 
-	res, err := routes.app.DeleteSubComment(request.Context(), in)
+	res, err := s.helper.DeleteSubComment(request.Context(), in)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)

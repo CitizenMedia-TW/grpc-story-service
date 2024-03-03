@@ -1,4 +1,4 @@
-package grpc
+package grpcapp
 
 //type GRPCServer interface {
 //	/* Test functions */

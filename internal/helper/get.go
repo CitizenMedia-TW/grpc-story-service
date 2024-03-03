@@ -1,4 +1,4 @@
-package app
+package helper
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (a *App) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*story.GetOneStoryResponse, error) {
-	result, err := a.database.GetStoryById(ctx, in.StoryId)
+func (h *Helper) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*story.GetOneStoryResponse, error) {
+	result, err := h.database.GetStoryById(ctx, in.StoryId)
 
 	if err != nil {
 		log.Println(err)
@@ -53,8 +53,8 @@ func (a *App) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*s
 	return res, nil
 }
 
-func (a *App) GetRecommended(ctx context.Context, in *story.GetRecommendedRequest) (*story.GetRecommendedResponse, error) {
-	result, err := a.database.GetStories(ctx, in.Skip, in.Count)
+func (h *Helper) GetRecommended(ctx context.Context, in *story.GetRecommendedRequest) (*story.GetRecommendedResponse, error) {
+	result, err := h.database.GetStories(ctx, in.Skip, in.Count)
 	if err != nil {
 		return nil, err
 	}

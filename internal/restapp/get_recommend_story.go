@@ -1,4 +1,4 @@
-package controllers
+package restapp
 
 import (
 	"encoding/json"
@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-func (routes HttpRoutes) GetRecommendStory(writer http.ResponseWriter, request *http.Request) {
+func (s RestApp) GetRecommendStory(writer http.ResponseWriter, request *http.Request) {
 	in := &story.GetRecommendedRequest{}
 	err := json.NewDecoder(request.Body).Decode(in)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
-	res, err := routes.app.GetRecommended(request.Context(), in)
+	res, err := s.helper.GetRecommended(request.Context(), in)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
