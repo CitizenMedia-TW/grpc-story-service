@@ -8,8 +8,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (a *App) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*story.GetOneStoryResponse, error) {
-	result, err := a.database.GetStoryById(ctx, in.StoryId)
+func (a *App) GetOneStory(ctx context.Context, storyId string) (*story.GetOneStoryResponse, error) {
+	result, err := a.database.GetStoryById(ctx, storyId)
 
 	if err != nil {
 		log.Println(err)
@@ -53,8 +53,8 @@ func (a *App) GetOneStory(ctx context.Context, in *story.GetOneStoryRequest) (*s
 	return res, nil
 }
 
-func (a *App) GetRecommended(ctx context.Context, in *story.GetRecommendedRequest) (*story.GetRecommendedResponse, error) {
-	result, err := a.database.GetStories(ctx, in.Skip, in.Count)
+func (a *App) GetRecommended(ctx context.Context, skip int64, count int64) (*story.GetRecommendedResponse, error) {
+	result, err := a.database.GetStories(ctx, skip, count)
 	if err != nil {
 		return nil, err
 	}

@@ -56,13 +56,8 @@ func (routes HttpRoutes) CreateStory(writer http.ResponseWriter, request *http.R
 }
 
 func (routes HttpRoutes) GetOneStory(writer http.ResponseWriter, request *http.Request) {
-	in := &story.GetOneStoryRequest{}
-	err := json.NewDecoder(request.Body).Decode(in)
-	if err != nil {
-		http.Error(writer, err.Error(), http.StatusBadRequest)
-		return
-	}
-	res, err := routes.app.GetOneStory(request.Context(), in)
+	storyId := request.URL.Query().Get("storyId")
+	res, err := routes.app.GetOneStory(request.Context(), storyId)
 	if err != nil {
 		if err == database.ErrNotFound {
 			http.Error(writer, "Story not found", http.StatusNotFound)

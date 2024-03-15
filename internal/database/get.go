@@ -50,7 +50,7 @@ func (db *Database) GetStoryById(ctx context.Context, id string) (model.Story, e
 	return storyQuery.ToDomain(), nil
 }
 
-func (db *Database) GetStories(ctx context.Context, skip int32, count int32) ([]model.Story, error) {
+func (db *Database) GetStories(ctx context.Context, skip int64, count int64) ([]model.Story, error) {
 	stories, err := getStories(ctx, db.database, skip, count)
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (db *Database) GetStories(ctx context.Context, skip int32, count int32) ([]
 	return results, nil
 }
 
-func getStories(ctx context.Context, database *mongo.Database, skip int32, count int32) ([]StoryQuery, error) {
+func getStories(ctx context.Context, database *mongo.Database, skip int64, count int64) ([]StoryQuery, error) {
 	pipeline := bson.A{
 		bson.D{{"$skip", skip}},
 		bson.D{{"$limit", count}},

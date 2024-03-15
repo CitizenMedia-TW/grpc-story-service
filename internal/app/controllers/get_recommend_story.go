@@ -2,18 +2,23 @@ package controllers
 
 import (
 	"encoding/json"
-	"grpc-story-service/protobuffs/story-service"
 	"net/http"
+	"strconv"
 )
 
 func (routes HttpRoutes) GetRecommendStory(writer http.ResponseWriter, request *http.Request) {
-	in := &story.GetRecommendedRequest{}
-	err := json.NewDecoder(request.Body).Decode(in)
+	skip, err := strconv.ParseInt(request.URL.Query().Get("skip"), 10, 64)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusBadRequest)
 		return
 	}
-	res, err := routes.app.GetRecommended(request.Context(), in)
+	count, err := strconv.ParseInt(request.URL.Query().Get("count"), 10, 64)
+	if err != nil {
+		http.Error(writer, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	res, err := routes.app.GetRecommended(request.Context(), skip, count)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
