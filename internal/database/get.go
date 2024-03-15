@@ -50,6 +50,27 @@ func (db *Database) GetStoryById(ctx context.Context, id string) (model.Story, e
 	return storyQuery.ToDomain(), nil
 }
 
+func (db *Database) GetUserStoryId(ctx context.Context, id string) ([]string, error) {
+	userId, err := primitive.ObjectIDFromHex(id)
+	var storyIds []string
+	if err != nil {
+		return storyIds, err
+	}
+	cursor, err := db.database.Collection(StoryCollection).Find(ctx, bson.M{"authorId": userId})
+	if err != nil {
+		return storyIds, err
+	}
+	for cursor.Next(ctx) {
+		doc := bson.M{}
+		err = cursor.Decode(&doc)
+		if err != nil {
+			return storyIds, err
+		}
+		storyIds = append(storyIds, cursor.Current.Lookup("_id").ObjectID().String())
+	}
+	return storyIds, err
+}
+
 func (db *Database) GetStories(ctx context.Context, skip int64, count int64) ([]model.Story, error) {
 	stories, err := getStories(ctx, db.database, skip, count)
 	if err != nil {
@@ -76,6 +97,7 @@ func (db *Database) GetStories(ctx context.Context, skip int64, count int64) ([]
 
 func getStories(ctx context.Context, database *mongo.Database, skip int64, count int64) ([]StoryQuery, error) {
 	pipeline := bson.A{
+		bson.D{{"$sort", bson.M{"_id": -1}}},
 		bson.D{{"$skip", skip}},
 		bson.D{{"$limit", count}},
 		bson.D{{"$lookup", bson.D{{"from", "Users"}, {"localField", "authorId"}, {"foreignField", "_id"}, {"as", "authorName"}}}},

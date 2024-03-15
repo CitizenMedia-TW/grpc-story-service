@@ -34,8 +34,7 @@ func (routes HttpRoutes) middlewares(next http.Handler) http.Handler {
 		res, err := routes.authClient.VerifyToken(context.Background(), &auth.VerifyTokenRequest{Token: r.Header.Get("Authorization")})
 
 		if err == nil && res.Message != "Failed" {
-			println(res.Message)
-			r = r.WithContext(context.WithValue(r.Context(), "userId", res.JwtContent.Id))
+			r = r.WithContext(context.WithValue(r.Context(), UserIdContextKey{}, res.JwtContent.Id))
 			r = r.WithContext(context.WithValue(r.Context(), "mail", res.JwtContent.Mail))
 		}
 
@@ -65,4 +64,7 @@ func (routes HttpRoutes) Routes() http.Handler {
 	mux.Handle("/subComment", routes.middlewares(http.HandlerFunc(routes.SubCommentRoute)))
 
 	return mux
+}
+
+type UserIdContextKey struct {
 }

@@ -66,3 +66,7 @@ func (a *App) GetRecommended(ctx context.Context, skip int64, count int64) (*sto
 
 	return &story.GetRecommendedResponse{StoryIdList: ids}, nil
 }
+
+func (a *App) GetMyStoryIds(ctx context.Context, user string) ([]string, error) {
+	return a.database.GetUserStoryId(ctx, user)
+}

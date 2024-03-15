@@ -23,7 +23,7 @@ func (routes HttpRoutes) CommentRoute(writer http.ResponseWriter, request *http.
 
 func (routes HttpRoutes) DeleteComment(writer http.ResponseWriter, request *http.Request) {
 
-	userId := request.Context().Value("userId")
+	userId := request.Context().Value(UserIdContextKey{})
 	if userId == nil {
 		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -55,7 +55,7 @@ func (routes HttpRoutes) DeleteComment(writer http.ResponseWriter, request *http
 }
 
 func (routes HttpRoutes) CreateComment(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("userId")
+	userId := r.Context().Value(UserIdContextKey{})
 	if userId == nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
